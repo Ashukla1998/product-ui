@@ -1,0 +1,24 @@
+.product-detail {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .product-detail img {
+    width: 100%;
+    max-width: 300px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+  
+  .product-detail h2 {
+    margin: 20px 0;
+    font-size: 2em;
+  }
+  
+  .product-price {
+    color: #d9534f;
+    font-weight: bold;
+  }
+  
