@@ -1,20 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './ProductList.css';
-import { Link } from 'react-router-dom';    
+import { Link } from 'react-router-dom';
 
 const ProductList = () => {
-  const initialProducts = [
-    { id: 1, title: 'Wayfarer Sunglasses', description: 'Stylish wayfarer sunglasses perfect for all occasions.', price: 499.0, image: '/sunglasses.jpg' },
-    { id: 2, title: 'Casual T-Shirt', description: 'Comfortable cotton t-shirt for daily wear.', price: 299.0, image: '/tshirt.jpg' },
-    { id: 3, title: 'Running Shoes', description: 'Durable running shoes with great grip.', price: 1299.0, image: '/shoes.jpg' },
-    { id: 4, title: 'Formal Shoes', description: 'Elegant formal shoes for special occasions.', price: 1999.0, image: '/formal-shoes.jpg' },
-    { id: 5, title: 'Sports Watch', description: 'Rugged and waterproof sports watch.', price: 999.0, image: '/watch.jpg' },
-  ];
-
-  const [products, setProducts] = useState(initialProducts);
+  const [products, setProducts] = useState([]); 
+  const [filteredProducts, setFilteredProducts] = useState([]); 
   const [searchTerm, setSearchTerm] = useState('');
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Fetch products on component mount
+  useEffect(() => {
+    axios.get('http://localhost:3000/products')
+      .then((response) => {
+        const formattedData = response.data.map((product) => ({
+          ...product,
+          image: product.image || '/dummy.png',
+        }));
+        setProducts(formattedData);
+        setFilteredProducts(formattedData); 
+      })
+      .catch((error) => console.error('Error fetching products:', error));
+  }, []);
+
 
   const handleScrape = () => {
     setLoading(true);
@@ -29,22 +38,26 @@ const ProductList = () => {
   };
 
   const handleFilter = (range) => {
-    let filteredProducts;
+    let filteredList = products;
+
     if (range === 'below500') {
-      filteredProducts = initialProducts.filter((product) => product.price < 500);
+      filteredList = products.filter((product) => product.price < 500);
     } else if (range === '500to1000') {
-      filteredProducts = initialProducts.filter((product) => product.price >= 500 && product.price <= 1000);
+      filteredList = products.filter((product) => product.price >= 500 && product.price <= 1000);
     } else if (range === 'above1000') {
-      filteredProducts = initialProducts.filter((product) => product.price > 1000);
-    } else {
-      filteredProducts = initialProducts;
+      filteredList = products.filter((product) => product.price > 1000);
     }
-    setProducts(filteredProducts);
+
+    setFilteredProducts(filteredList);
   };
 
-  const filteredProducts = products.filter((product) =>
-    product.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+
+  useEffect(() => {
+    const results = products.filter((product) =>
+      product.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredProducts(results);
+  }, [searchTerm, products]);
 
   return (
     <div className="product-list-container">
@@ -81,13 +94,13 @@ const ProductList = () => {
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
             <div key={product.id} className="product-card">
-            <Link to={`/product/${product.id}`}>
-              <img src={product.image} alt={product.title} className="product-image" />
-              <h3>{product.title}</h3>
-              <p>{product.description}</p>
-              <p className="product-price">Price: ₹{product.price}</p>
-            </Link>
-          </div>
+              <Link to={`/product/${product.id}`}>
+                <img src={product.image} alt={product.title} className="product-image" />
+                <h3>{product.title}</h3>
+                <p>{product.description}</p>
+                <p className="product-price">Price: ₹{product.price}</p>
+              </Link>
+            </div>
           ))
         ) : (
           <p className="no-products">No products found</p>
